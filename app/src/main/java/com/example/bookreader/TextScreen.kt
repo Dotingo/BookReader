@@ -1,6 +1,5 @@
 package com.example.bookreader
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -45,7 +44,6 @@ fun TextScreen(content: String, title: String, navigateBack:()->Unit) {
 
         ) {
             items(lines.size) {index ->
-                Log.d("m", content)
                 Text(
                     text = lines[index],
                     color = MaterialTheme.colorScheme.onBackground

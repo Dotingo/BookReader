@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -84,7 +85,7 @@ fun ChooseTxtFile(
     state: FileState,
     onEvent: (FilesEvent) -> Unit
 ) {
-    val fileInfo = remember { mutableStateOf(Pair("", "")) }
+
     val context = LocalContext.current
     val navController = rememberNavController()
     var uri by remember { mutableStateOf<Uri?>(null) }
@@ -101,28 +102,32 @@ fun ChooseTxtFile(
                     result.data?.data?.let { data ->
                         uri = data
                         content = uri?.let { readTextFromUri(context, it) }.toString()
-                        navController.navigate("textScreen")
-                        state.title.value = fileInfo.value.first
-                        state.size.value = fileInfo.value.second
+
+                        val fileInfo = getFileInfo(context, uri!!)
+                        state.title.value = fileInfo.first
+                        state.size.value = fileInfo.second
                         state.uri.value = uri.toString()
-                        title = fileInfo.value.first
+                        title = fileInfo.first
+
+                        context.contentResolver.takePersistableUriPermission(
+                            uri!!,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+
                         onEvent(
                             FilesEvent.SaveFile(
-                                title = fileInfo.value.first,
-                                size = fileInfo.value.second,
+                                title = fileInfo.first,
+                                size = fileInfo.second,
                                 uri = uri.toString()
                             )
                         )
+
+                        navController.navigate("textScreen")
                     }
                 }
             }
-        }
 
-    LaunchedEffect(uri) {
-        uri?.let {
-            fileInfo.value = getFileInfo(context, it)
         }
-    }
 
     LaunchedEffect(saveDb) {
 
@@ -154,7 +159,9 @@ fun ChooseTxtFile(
                 },
                 floatingActionButtonPosition = FabPosition.End,
                 topBar = {
-                    CenterAlignedTopAppBar(title = { Text(text = "Book Reader") })
+                    CenterAlignedTopAppBar(
+                        title = { Text(text = "Book Reader") }
+                    )
                 }
 
             ) {
@@ -184,7 +191,11 @@ fun ChooseTxtFile(
         }
         composable("textScreen") {
             TextScreen(content, title) {
-                navController.popBackStack()
+                if (navController.currentBackStackEntry?.lifecycle?.currentState
+                    == Lifecycle.State.RESUMED
+                ) {
+                    navController.popBackStack()
+                }
             }
         }
     }
