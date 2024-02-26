@@ -8,6 +8,8 @@ import android.provider.OpenableColumns
 import android.text.format.Formatter
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -92,9 +93,6 @@ fun ChooseTxtFile(
     var content by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-    val saveDb by remember {
-        mutableStateOf(true)
-    }
     val chooseFileLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             scope.launch {
@@ -128,10 +126,6 @@ fun ChooseTxtFile(
             }
 
         }
-
-    LaunchedEffect(saveDb) {
-
-    }
 
     val listState = rememberLazyListState()
     val expandedFab by remember {
@@ -189,7 +183,13 @@ fun ChooseTxtFile(
                 }
             }
         }
-        composable("textScreen") {
+        composable("textScreen",
+            enterTransition = {
+                EnterTransition.None
+            },
+            exitTransition = {
+                ExitTransition.None
+            }) {
             TextScreen(content, title) {
                 if (navController.currentBackStackEntry?.lifecycle?.currentState
                     == Lifecycle.State.RESUMED

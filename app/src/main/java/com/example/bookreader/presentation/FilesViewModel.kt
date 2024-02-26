@@ -18,7 +18,7 @@ class FilesViewModel(
 
     private var files = dao.getFiles()
 
-    val _state = MutableStateFlow(FileState())
+    private val _state = MutableStateFlow(FileState())
     val state =
         combine(_state, files){state, files ->
             state.copy(
