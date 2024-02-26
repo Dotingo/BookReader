@@ -8,8 +8,8 @@ import android.provider.OpenableColumns
 import android.text.format.Formatter
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -120,7 +120,9 @@ fun ChooseTxtFile(
                             )
                         )
 
-                        navController.navigate("textScreen")
+                        navController.navigate("textScreen"){
+                                launchSingleTop = true
+                        }
                     }
                 }
             }
@@ -134,7 +136,32 @@ fun ChooseTxtFile(
         }
     }
 
-    NavHost(navController, startDestination = "main") {
+    NavHost(navController, startDestination = "main",
+        enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(200)
+            )
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(200)
+            )
+        },
+        popEnterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(200)
+            )
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(200)
+            )
+        }
+    ) {
         composable("main") {
             Scaffold(
                 floatingActionButton = {
@@ -183,13 +210,7 @@ fun ChooseTxtFile(
                 }
             }
         }
-        composable("textScreen",
-            enterTransition = {
-                EnterTransition.None
-            },
-            exitTransition = {
-                ExitTransition.None
-            }) {
+        composable("textScreen") {
             TextScreen(content, title) {
                 if (navController.currentBackStackEntry?.lifecycle?.currentState
                     == Lifecycle.State.RESUMED
